@@ -62,7 +62,7 @@ def crawl(url):
 '''
 def hash_url(url):
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, proxies=PROXIES,timeout=10)
         response.raise_for_status()  # Raise error if not 200 OK
             # Optional: parse and prettify the HTML (to normalize formatting)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -140,19 +140,20 @@ def multi_repo(url):
     soup=BeautifulSoup(res.text,'html.parser')
     links=set()
     p=0
-    print("collecting all pages url........")
+    print("collecting all pages url ........")
     for a_tag in soup.find_all('a',class_=True,href=True):
         if len(a_tag['class']) == 1 and a_tag['class'][0] == "prc-Pagination-Page-yoEQf":
             full_url = urljoin(url, a_tag['href'])
             query_params = parse_qs(urlparse(full_url).query)
             p_value = int(query_params.get("p", [0])[0])
             if(p_value>p):
-                p=p_value       
-    
+                p=p_value    
+
+    print("Parsing each page and collecting all repos in it..........")
     b_url=soup.find('a',class_="prc-Pagination-Page-yoEQf",href=True)['href']
     base_url = b_url.split("p=")[0] + "p="
-    print("Parsing each page and collecting all repos in it..........")
     for i in range(1,(p+1)):
+        print(f"Parsing {i} page.......")
         page_url=base_url+str(i)
         valid_ip()
         page_res = requests.get(url=page_url,headers=get_headers(),proxies=PROXIES)
